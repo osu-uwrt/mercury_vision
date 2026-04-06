@@ -2,7 +2,7 @@
   ros__parameters:
     general:
       camera_model: zedxm
-      serial_number: 54910212
+      serial_number: 53927609
       camera_name: "mercury/ffc"
       pub_resolution: "NATIVE" # The resolution used for image and depth map publishing. 'NATIVE' to use the same `general.grab_resolution` - `CUSTOM` to apply the `general.pub_downscale_factor` downscale factory to reduce bandwidth in transmission
       # pub_downscale_factor: 2.0 # rescale factor used to rescale image before publishing when 'pub_resolution' is 'CUSTOM'
@@ -11,7 +11,14 @@
       grab_resolution: 'HD1200'
       self_calib: false
     pos_tracking:
+      pos_tracking_enabled: true
       publish_tf: false
+    video:
+      publish_rgb: false
+      publish_left_right: true
+      publish_stereo: true
+      publish_raw: true      # only if you also want raw topics
+      publish_gray: false  
     debug:
       debug_common: false
       debug_point_cloud: false

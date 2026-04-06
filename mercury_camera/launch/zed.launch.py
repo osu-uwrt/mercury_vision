@@ -61,8 +61,7 @@ def generate_launch_description():
                         parameters=[
                             zed_config_path,
                             zedxm_camera_path,
-                            ffc_config_path,
-                            {'general.serial_number': 54910212}
+                            ffc_config_path
                         ]
                     ),                
                 ],
