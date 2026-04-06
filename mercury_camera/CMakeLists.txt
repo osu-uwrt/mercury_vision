@@ -7,9 +7,28 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(std_srvs REQUIRED) 
+find_package(sensor_msgs REQUIRED)
+
+# install python files
+ament_python_install_package(${PROJECT_NAME})
+
+file(GLOB python_programs ${PROJECT_NAME}/*.py)
+install(PROGRAMS ${python_programs}
+  DESTINATION lib/${PROJECT_NAME})
+
+# Install launch files
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "*.launch*"
+)
+
+# Install configuration files
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "*"
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
