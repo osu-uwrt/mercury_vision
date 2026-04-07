@@ -12,7 +12,14 @@
       self_calib: false
     pos_tracking:
       pos_tracking_enabled: true
+      pos_tracking_mode: 'GEN_3'
       publish_tf: false
+      publish_pos_covariance: true
+    sensors:
+      sensors_image_sync: true
+      publish_imu: true
+      publish_imu_raw: true
+      publish_mag: true
     video:
       publish_rgb: false
       publish_left_right: true
