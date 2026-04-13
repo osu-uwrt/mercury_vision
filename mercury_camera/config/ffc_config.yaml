@@ -25,11 +25,11 @@
       publish_odom_pose: true
       publish_pose_covariance: true
     video:
-      publish_rgb: false
+      publish_rgb: true
       publish_left_right: true
       publish_stereo: true
       publish_raw: true      # only if you also want raw topics
-      publish_gray: false  
+      publish_gray: true  
     debug:
       debug_common: false
       debug_point_cloud: false
