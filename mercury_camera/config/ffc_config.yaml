@@ -27,8 +27,8 @@
     video:
       publish_rgb: false
       publish_left_right: true
-      publish_stereo: false
-      publish_raw: false      # only if you also want raw topics
+      publish_stereo: true   # needed for picture taker
+      publish_raw: true      # only if you also want raw topics. needed for picture taker
       publish_gray: true   # apriltag depends on me
     debug:
       debug_common: false
