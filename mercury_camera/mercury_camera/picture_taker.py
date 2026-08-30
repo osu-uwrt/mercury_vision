@@ -19,7 +19,7 @@ class ImageCaptureNode(Node):
         self.declare_parameter('robot_namespace', 'talos')
         self.declare_parameter('camera_name', 'ffc')
         self.declare_parameter('save_directory', '/home/ros/cal_images')
-        self.declare_parameter('subscription_enabled', True)
+        self.declare_parameter('subscription_enabled', False)
         self.declare_parameter('save_stereo', False)
         self.declare_parameter('save_split', True)
         self.add_on_set_parameters_callback(self.on_param_change)

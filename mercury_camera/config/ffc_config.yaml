@@ -12,20 +12,24 @@
       self_calib: false
     pos_tracking:
       pos_tracking_enabled: true
-      pos_tracking_mode: 'GEN_3'
+      pos_tracking_mode: "GEN_3"
+      imu_fusion: true
       publish_tf: false
-      publish_pos_covariance: true
-    sensors:
-      sensors_image_sync: true
-      publish_imu: true
-      publish_imu_raw: true
-      publish_mag: true
+      publish_map_tf: false
+      odometry_frame: 'odom'
+      area_memory: false
+      reset_odom_with_loop_closure: false
+      set_gravity_as_origin: true
+      floor_alignment: false
+      two_d_mode: false
+      publish_odom_pose: true
+      publish_pose_covariance: true
     video:
       publish_rgb: false
       publish_left_right: true
-      publish_stereo: true
-      publish_raw: true      # only if you also want raw topics
-      publish_gray: false  
+      publish_stereo: true   # needed for picture taker
+      publish_raw: true      # only if you also want raw topics. needed for picture taker
+      publish_gray: true   # apriltag depends on me
     debug:
       debug_common: false
       debug_point_cloud: false
