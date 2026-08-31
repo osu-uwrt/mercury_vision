@@ -8,7 +8,6 @@ from ament_index_python import get_package_share_directory
 import os
 
 
-
 def generate_launch_description():
 
     # Define common configuration path
@@ -19,21 +18,21 @@ def generate_launch_description():
     )
 
     # Paths for individual camera configurations
-    
+
     # Zed X Mini
     zedxm_camera_path = os.path.join(
         get_package_share_directory('zed_wrapper'),
         'config',
         'zedxm.yaml'
     )
-    
+
     # FFC Overrides
     ffc_config_path = os.path.join(
         get_package_share_directory('mercury_camera'),
         'config',
         'ffc_config.yaml'
     )
-    
+
     return LaunchDescription([
         DeclareLaunchArgument(
             name="robot",
@@ -63,10 +62,10 @@ def generate_launch_description():
                             zedxm_camera_path,
                             ffc_config_path
                         ]
-                    ),                
+                    ),
                 ],
             ),
-            
+
             # Used for taking pictures, good for camera calibration
             Node(
                 package='mercury_camera',
@@ -81,7 +80,7 @@ def generate_launch_description():
                     {"save_split": True}
                 ]
             )
-            
+
         ], scoped=True),
 
 

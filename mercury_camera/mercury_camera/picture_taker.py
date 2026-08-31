@@ -14,7 +14,7 @@ from datetime import datetime
 class ImageCaptureNode(Node):
     def __init__(self):
         super().__init__('image_capture_node')
-        
+
         # Parameters
         self.declare_parameter('robot_namespace', 'talos')
         self.declare_parameter('camera_name', 'ffc')
@@ -23,57 +23,65 @@ class ImageCaptureNode(Node):
         self.declare_parameter('save_stereo', False)
         self.declare_parameter('save_split', True)
         self.add_on_set_parameters_callback(self.on_param_change)
-        
+
         # Get parameter values
-        self.robot_namespace = self.get_parameter('robot_namespace').get_parameter_value().string_value
-        self.camera_name = self.get_parameter('camera_name').get_parameter_value().string_value
-        self.save_directory = self.get_parameter('save_directory').get_parameter_value().string_value
-        self.subscription_enabled = self.get_parameter('subscription_enabled').get_parameter_value().bool_value
-        self.save_stereo = self.get_parameter('save_stereo').get_parameter_value().bool_value
-        self.save_split = self.get_parameter('save_split').get_parameter_value().bool_value
-        
+        self.robot_namespace = self.get_parameter(
+            'robot_namespace').get_parameter_value().string_value
+        self.camera_name = self.get_parameter(
+            'camera_name').get_parameter_value().string_value
+        self.save_directory = self.get_parameter(
+            'save_directory').get_parameter_value().string_value
+        self.subscription_enabled = self.get_parameter(
+            'subscription_enabled').get_parameter_value().bool_value
+        self.save_stereo = self.get_parameter(
+            'save_stereo').get_parameter_value().bool_value
+        self.save_split = self.get_parameter(
+            'save_split').get_parameter_value().bool_value
+
         # Build the full image topic path
         self.image_topic = f"/{self.robot_namespace}/{self.camera_name}/zed_node/stereo/color/raw/image"
-        
+
         self.create_save_dir()
-        
+
         # Initialize CV bridge for image conversion
         self.bridge = CvBridge()
-        
+
         # Store the latest image and subscription state
         self.latest_image = None
         self.image_subscriber = None
-        
+
         # Log the topic we're subscribing to
         self.get_logger().info(f"Image topic: {self.image_topic}")
-        
+
         # Create initial subscriber for image topic
         if self.subscription_enabled:
             self.create_image_subscriber()
-        
+
         # Create service for capturing images
         self.capture_service = self.create_service(
             Trigger,
             'capture_image',
             self.capture_image_callback
         )
-        
+
         # Create service for enabling/disabling subscription
         self.enable_subscription_service = self.create_service(
             SetBool,
             'enable_subscription',
             self.enable_subscription_callback
         )
-        
+
     def create_save_dir(self):
         # Create save directory if it doesn't exist
         os.makedirs(self.save_directory, exist_ok=True)
-        
+
         # Create subdirectories for split images if needed
         if self.save_split:
-            os.makedirs(os.path.join(self.save_directory, 'left'), exist_ok=True)
-            os.makedirs(os.path.join(self.save_directory, 'right'), exist_ok=True)
-            
+            os.makedirs(os.path.join(
+                self.save_directory, 'left'), exist_ok=True)
+            os.makedirs(os.path.join(
+                self.save_directory, 'right'), exist_ok=True)
+
     def on_param_change(self, params):
         changed = []
         for p in params:
@@ -81,10 +89,10 @@ class ImageCaptureNode(Node):
                 current = getattr(self, p.name)
                 if current != p.value:
                     setattr(self, p.name, p.value)
-                    self.get_logger().info(f"Parameter '{p.name}' changed: {current} -> {p.value}")
+                    self.get_logger().info(
+                        f"Parameter '{p.name}' changed: {current} -> {p.value}")
                     changed.append(p)
-                    
-                    
+
         self.handle_param_update(changed)
         return SetParametersResult(successful=True)
 
@@ -118,7 +126,7 @@ class ImageCaptureNode(Node):
             if topic_changed:
                 self.destroy_image_subscriber()
                 self.create_image_subscriber()
-        
+
     def create_image_subscriber(self):
         """Create the image subscriber"""
         if self.image_subscriber is None:
@@ -128,8 +136,9 @@ class ImageCaptureNode(Node):
                 self.image_callback,
                 10
             )
-            self.get_logger().info(f"Subscribed to image topic: {self.image_topic}")
-    
+            self.get_logger().info(
+                f"Subscribed to image topic: {self.image_topic}")
+
     def destroy_image_subscriber(self):
         """Destroy the image subscriber"""
         if self.image_subscriber is not None:
@@ -140,7 +149,8 @@ class ImageCaptureNode(Node):
     def image_callback(self, msg):
         try:
             # Convert ROS image message to OpenCV format
-            self.latest_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            self.latest_image = self.bridge.imgmsg_to_cv2(
+                msg, desired_encoding='bgr8')
         except Exception as e:
             self.get_logger().error(f"Failed to convert image: {str(e)}")
 
@@ -149,77 +159,87 @@ class ImageCaptureNode(Node):
             response.success = False
             response.message = "No image available"
             return response
-        
+
         try:
-            
+
             # if not self.save_stereo or self.save_split:
             #     return
-            
+
             # Generate filename with timestamp
             timestamp = datetime.now().strftime("%Y_%m_%d__%H_%M_%S_%f")[:-3]
-            camera_name = self.get_parameter('camera_name').get_parameter_value().string_value
-            
+            camera_name = self.get_parameter(
+                'camera_name').get_parameter_value().string_value
+
             saved_files = []
-            
+
             self.create_save_dir()
-            
+
             # Save stereo image if enabled
             if self.save_stereo:
                 stereo_filename = f"captured_image_{camera_name}_{timestamp}.png"
-                stereo_filepath = os.path.join(self.save_directory, stereo_filename)
-                success = cv2.imwrite(stereo_filepath, self.latest_image, [cv2.IMWRITE_PNG_COMPRESSION, 0])
-                
+                stereo_filepath = os.path.join(
+                    self.save_directory, stereo_filename)
+                success = cv2.imwrite(stereo_filepath, self.latest_image, [
+                                      cv2.IMWRITE_PNG_COMPRESSION, 0])
+
                 if success:
                     saved_files.append(f"\nStereo: {stereo_filepath}")
-                    self.get_logger().info(f"Stereo image saved: {stereo_filepath}")
+                    self.get_logger().info(
+                        f"Stereo image saved: {stereo_filepath}")
                 else:
                     self.get_logger().error("Failed to save stereo image")
-            
+
             # Save split left/right images if enabled
             if self.save_split:
                 height, width = self.latest_image.shape[:2]
                 mid_width = width // 2
-                
+
                 # Split the image
                 left_image = self.latest_image[:, :mid_width]
                 right_image = self.latest_image[:, mid_width:]
-                
+
                 # Save left image
                 left_filename = f"captured_image_{camera_name}_{timestamp}.png"
-                left_filepath = os.path.join(self.save_directory, 'left', left_filename)
-                left_success = cv2.imwrite(left_filepath, left_image, [cv2.IMWRITE_PNG_COMPRESSION, 0])
-                
+                left_filepath = os.path.join(
+                    self.save_directory, 'left', left_filename)
+                left_success = cv2.imwrite(left_filepath, left_image, [
+                                           cv2.IMWRITE_PNG_COMPRESSION, 0])
+
                 # Save right image
                 right_filename = f"captured_image_{camera_name}_{timestamp}.png"
-                right_filepath = os.path.join(self.save_directory, 'right', right_filename)
-                right_success = cv2.imwrite(right_filepath, right_image, [cv2.IMWRITE_PNG_COMPRESSION, 0])
-                
+                right_filepath = os.path.join(
+                    self.save_directory, 'right', right_filename)
+                right_success = cv2.imwrite(right_filepath, right_image, [
+                                            cv2.IMWRITE_PNG_COMPRESSION, 0])
+
                 if left_success:
                     saved_files.append(f"\nLeft: {left_filepath}")
-                    self.get_logger().info(f"Left image saved: {left_filepath}")
+                    self.get_logger().info(
+                        f"Left image saved: {left_filepath}")
                 else:
                     self.get_logger().error("Failed to save left image")
-                    
+
                 if right_success:
                     saved_files.append(f"\nRight: {right_filepath}")
-                    self.get_logger().info(f"Right image saved: {right_filepath}")
+                    self.get_logger().info(
+                        f"Right image saved: {right_filepath}")
                 else:
                     self.get_logger().error("Failed to save right image")
-            
+
             if saved_files:
                 response.success = True
                 response.message = f"Images saved - {', '.join(saved_files)}"
             else:
                 response.success = False
                 response.message = "No images were saved (check save_stereo and save_split parameters)"
-                
+
         except Exception as e:
             response.success = False
             response.message = f"Error: {str(e)}"
             self.get_logger().error(f"Error capturing image: {str(e)}")
-        
+
         return response
-    
+
     def enable_subscription_callback(self, request, response):
         """Handle enable/disable subscription service calls"""
         try:
@@ -241,18 +261,18 @@ class ImageCaptureNode(Node):
                 else:
                     response.success = True
                     response.message = "Image subscription already disabled"
-                    
+
         except Exception as e:
             response.success = False
             response.message = f"Error: {str(e)}"
             self.get_logger().error(f"Error toggling subscription: {str(e)}")
-        
+
         return response
 
 
 def main(args=None):
     rclpy.init(args=args)
-    
+
     try:
         node = ImageCaptureNode()
         rclpy.spin(node)
