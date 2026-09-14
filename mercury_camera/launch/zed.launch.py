@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, Shutdown
+from launch.actions import DeclareLaunchArgument, GroupAction, Shutdown, OpaqueFunction
 from launch_ros.actions import PushRosNamespace, ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 from launch.conditions import IfCondition
@@ -7,6 +7,27 @@ from launch.substitutions import PythonExpression, LaunchConfiguration as LC
 from ament_index_python import get_package_share_directory
 import os
 
+def launch_picture_taker(context, *args, **kwargs):
+    launch_items = []
+
+    if LC("picture_taker_enabled").perform(context) != "True":
+        return launch_items
+    
+    launch_items.append(
+        Node(
+            package='mercury_camera',
+            executable='picture_taker.py',
+            name='picture_taker',
+            output='screen',
+            parameters=[
+                {"robot_namespace": LC("robot")},
+                {"camera_name": "ffc"},
+                {"subscription_enabled": True},
+                {"save_stereo": False},
+                {"save_split": True}
+            ]
+        )
+    )
 
 def generate_launch_description():
 
@@ -39,6 +60,11 @@ def generate_launch_description():
             default_value="mercury",
             description="name of the robot"
         ),
+        DeclareLaunchArgument(
+            "picture_taker_enabled",
+            default_value="False",
+            description="Enable picture taker for camera calibration"
+        ),
         # Group actions under the robot namespace
         GroupAction([
             PushRosNamespace(LC("robot")),
@@ -65,22 +91,9 @@ def generate_launch_description():
                     ),
                 ],
             ),
-
             # Used for taking pictures, good for camera calibration
-            Node(
-                package='mercury_camera',
-                executable='picture_taker.py',
-                name='picture_taker',
-                output='screen',
-                parameters=[
-                    {"robot_namespace": LC("robot")},
-                    {"camera_name": "ffc"},
-                    {"subscription_enabled": True},
-                    {"save_stereo": False},
-                    {"save_split": True}
-                ]
-            )
-
+            OpaqueFunction(function=launch_picture_taker)
+            
         ], scoped=True),
 
 
